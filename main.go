@@ -1,7 +1,12 @@
 package main
 
-import "fmt"
+import (
+	"log"
+
+	"github.com/exegeteio/goaway/pkg/config"
+)
 
 func main() {
-	fmt.Println("vim-go")
+	c := config.Read()
+	log.Printf("Here:  %v", c)
 }

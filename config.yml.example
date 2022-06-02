@@ -1,0 +1,23 @@
+defaults:
+  key: ""
+  domain: "https://exegete.io"
+  destination: "/"
+route:
+  - key: A
+    domain: "https://a.exegete.io" # https://go.away/A/whatever => a.exegete.io/whatever
+  - key: B
+    domain: "https://b.exegete.io" # https://go.away/B/overthere => b.exegete.io/overthere
+fixed_length: # Length excluding domain character, and fixed_length character.
+  - length: 10 # https://go.away/X21234567890
+    route:
+      - key: 1
+        destionation: /one/
+      - key: 2
+        detination: /two/
+  - length: 12 # https://go.away/XB123456789012
+    route:
+      - key: A
+        destination: /a/
+      - key: B
+        destination: /b/
+
