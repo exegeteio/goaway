@@ -1,33 +1,63 @@
 package config
 
 import (
+	"errors"
 	"log"
 	"os"
 
 	"gopkg.in/yaml.v3"
 )
 
-// TODO:  Create a Config module???
 type route struct {
 	Key         string `yaml:"key"`
 	Domain      string `yaml:"domain"`
 	Destination string `yaml:"destination"`
 }
 
-// TODO:  Create a Config module???
 type fixed_length struct {
-	Length int
-	Route  []route
+	Length int     `yaml:"length"`
+	Routes []route `yaml:"route"`
 }
 
-// TODO:  Create a Config module???
 type Config struct {
-	Defaults    route
-	Route       []route
-	FixedLength []fixed_length `yaml:"fixed_length"`
+	Defaults     route          `yaml:"defaults"`
+	Routes       []route        `yaml:"route"`
+	FixedLengths []fixed_length `yaml:"fixed_length"`
 }
 
-// TODO:  Create a Config module???
+func findRoute(routes []route, key string) (string, string, error) {
+	for _, route := range routes {
+		if route.Key == key {
+			return route.Domain, route.Destination, nil
+		}
+	}
+	return "", "", errors.New("Route not found")
+}
+
+// Find Route for a given key.
+func (c *Config) Route(key string) (string, string) {
+	domain, destination, err := findRoute(c.Routes, key)
+	if err != nil {
+		return c.Defaults.Domain, c.Defaults.Destination
+	}
+	return domain, destination
+}
+
+// Find Fixed Length route for a given length.
+func (c *Config) FixedLength(length int, key string) (string, string, error) {
+	for _, fixed_length := range c.FixedLengths {
+		if fixed_length.Length == length {
+			// Check the list of routes for a match.
+			domain, destination, err := findRoute(fixed_length.Routes, key)
+			if err == nil {
+				return domain, destination, nil
+			}
+		}
+	}
+	return "", "", errors.New("Fixed Length route not found")
+}
+
+// Read config file from disk and marshal into a Config struct.
 func Read() Config {
 	config_data := readConfig()
 
@@ -41,7 +71,7 @@ func Read() Config {
 	return c
 }
 
-// TODO:  Create a Config module???
+// Read config file from disk.
 func readConfig() []byte {
 	content, err := os.ReadFile("config.yml")
 	if err != nil {
